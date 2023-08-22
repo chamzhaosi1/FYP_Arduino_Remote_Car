@@ -1,0 +1,101 @@
+<app-header [userFullName]="name"></app-header>
+
+<div class="d-block d-sm-flex justify-content-center w-100 container-fluid gap-3">
+    <form [formGroup]="controlSelectionForm" class="text-white p-3 bg-control">
+      <h4 class="text-center mb-3">Control Selection</h4>
+      <div class="form-check mb-3">
+        <input class="form-check-input" type="radio" name="devicesSelection" id="joystick" formControlName = devicesSelection value="joystick">
+        <label class="form-check-label" for="joystick">
+          <img src="{{joytstickImgUrl}}" alt="" >
+        </label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="radio" name="devicesSelection" id="keyboard_mouse" formControlName = devicesSelection value="keyboard_mouse">
+        <label class="form-check-label" for="keyboard_mouse">
+          <img src="{{keyboardImgUrl}}" alt="">
+        </label>
+      </div>
+    </form>
+    <div  class="text-white bg-add-device p-3 w-100">
+      <div class="row">
+        
+        <div class="d-flex justify-content-around">
+          <div>
+            <form [formGroup]="romoRegisterForm" (ngSubmit)="submitRegisterForm()"
+              class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3 col-lg-12 col-sm-10 col-12"  role="register">
+              <label class="text-center mb-3">Add New ROMO device</label>
+
+              <div class="alert alert-danger" [style.display]= "showErrorMessage ? 'block' : 'none'" >{{errorMessage}}</div>
+
+              <input class="form-control mb-2" placeholder="Device Mac address" id="device_mac_address" name="device_mac_address"
+                formControlName = device_mac_address required [ngClass]="{'is-invalid' : Mac_address.touched && Mac_address.invalid} ">
+
+              <div class="alert alert-danger" *ngIf="Mac_address.touched && Mac_address.invalid">
+                <div *ngIf="Mac_address.errors?.required">
+                    ROMO product's mac_address is required.
+                </div>
+
+                <div *ngIf="Mac_address.errors?.checkMacAddValidations">
+                  Invalid ROMO product's mac_address.
+                </div>
+              </div>
+
+              <input id="label_name" name="label_name" class="form-control mb-2" placeholder="Label Name"
+                formControlName="label_name" required [ngClass]="{'is-invalid' : Label_name.touched && Label_name.invalid} ">
+              
+              <div class="alert alert-danger" *ngIf="Label_name.touched && Label_name.invalid">
+                <div *ngIf="Label_name.errors?.required">
+                    ROMO product's label name is required.
+                </div>
+              </div>
+              
+              <div class="d-flex justify-content-center">
+                <button class="text-bg-primary btn-lg rounded w-50" type="submit" 
+                [disabled]="romoRegisterForm.invalid"
+                [ngClass]="{
+                  'bg-secondary' : romoRegisterForm.invalid
+                }"
+                > <img src="{{checkIconUrl}}" alt="tick" width="30" height="auto"> </button>
+              </div>
+            </form>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container-fluid gap-3 mt-3">
+    <div class="bg-connect" style="--bs-bg-opacity: .5;">
+      <div *ngIf="!notRomoDeviceFound">
+        <table class="table" id="deviceTable">
+            <thead>
+              <tr>
+                <th scope="col">No</th>
+                <th scope="col">Label Name</th>
+                <th class="d-none d-sm-table-cell" scope="col">Mac Address</th>
+                <th scope="col">Status</th>
+                <th class="d-none d-sm-table-cell" scope="col">Last Active</th>
+                <th scope="col">Operation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let romo of romo_detail; let i = index">
+                <th scope="row">{{i+1}}</th>
+                <td>{{romo.romo_label}}</td>
+                <td #mac_address class="d-none d-sm-table-cell">{{romo.mac_address}}</td>
+                <td>{{romo.status}}</td>
+                <td class="d-none d-sm-table-cell">{{romo.last_active}}</td>
+                <td>
+                    <button type="button" class="btn btn-primary" (click)="connectROMO(mac_address)"
+                    [disabled]=!isDeviceReady[i]>Connect</button>
+                    <button type="button" class="btn btn-danger ms-2" (click)="deleteROMO(mac_address, i)">Delete</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+      </div>
+      <div *ngIf="notRomoDeviceFound" class="alert alert-secondary" role="alert"> 
+        You don't have any ROMO device yet!
+      </div>
+    </div>
+  </div>

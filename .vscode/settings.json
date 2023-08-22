@@ -1,0 +1,7 @@
+{
+    "python.formatting.provider": "none",
+    "python.linting.enabled": false,
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    }
+}

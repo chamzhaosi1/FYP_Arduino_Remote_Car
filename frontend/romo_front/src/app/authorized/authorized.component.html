@@ -1,0 +1,83 @@
+<app-header [userFullName]="name"></app-header>
+<div class="container-fluid mt-5 row border-bottom pb-3">
+    <div class="container text-center col-8">
+        <h5 class="alert alert-warning"  role="alert">Please upload or take a snapshot of an image that features only one person's face..</h5>
+    </div>
+    <div class="col-lg-6 col-12 border-end mb-3">
+        <div class="d-flex justify-content-center">
+            <h6 class="alert alert-info my-3 text-center col-10" role="alert">
+                Please upload five pictures of each person from different angles. <br>
+            </h6>
+        </div>
+        <form [formGroup]="authImgUploadForm" (ngSubmit)="authImgUploadFormSubmit()" class="col-10 m-auto">
+            <div class="mb-3">
+                <label for="upload_image" class="form-label">Upload Image</label>
+                <input type="file" class="form-control" id="upload_image" name="upload_image" 
+                    formControlName = upload_image required (change)="uploadImgChange($event)" [ngClass]="{'is-invalid': Upload_image.touched && Upload_image.invalid }" >
+        
+                <div class="alert alert-danger" *ngIf="Upload_image.touched && Upload_image.invalid">
+                    <div *ngIf="Upload_image.errors?.required">
+                        Image is required.
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="person_name" class="form-label">Name of person</label>
+                <input type="text" class="form-control" id="person_name" name="person_name" 
+                    formControlName = person_name [ngClass]="{'is-invalid': Person_name.touched && Person_name.invalid }" required>
+                
+                <div class="alert alert-danger" *ngIf="Person_name.touched && Person_name.invalid">
+                    <div *ngIf="Person_name.errors?.required">
+                        Name of person is required.
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex row" >
+                <button type="submit" class="btn btn-primary btn-block m-auto col-6" [disabled]="authImgUploadForm.invalid">Submit</button>
+            </div>  
+        </form>
+    </div>
+    <div class="col-lg-6 col-12 m-auto d-block text-center pt-3">
+            <h4 >Preserve this moment with a quick photo. <span class="h6">(Recommendation)</span></h4>
+            <div class="d-flex justify-content-center">
+                <form [formGroup]="authImgCaptureForm">
+                    <div class="mb-3">
+                        <label for="person_name" class="form-label">Name of person</label>
+                        <input type="text" class="form-control" id="person_name" name="person_name" 
+                            formControlName = person_name [ngClass]="{'is-invalid': Capture_person_name.touched && Capture_person_name.invalid }" required>
+                        
+                            <div class="alert alert-danger" *ngIf="Capture_person_name.touched && Capture_person_name.invalid">
+                                <div *ngIf="Capture_person_name.errors?.required">
+                                    Name of person is required.
+                                </div>
+                            </div>
+                    </div>
+                    <div class="d-flex row" ></div>
+                        <button type="button" class="btn btn-primary btn-lg" [disabled]="authImgCaptureForm.invalid" (click)="camera()">Camera</button>
+                    <div class="d-flex row" ></div>
+                </form>
+            </div>
+    </div>
+</div>
+
+<div class="container">
+    <div *ngIf="noImgToShow" class="alert alert-secondary mt-5">{{generalMessage}}</div>
+
+   <div *ngIf="!noImgToShow" class="accordion row d-flex mt-3 row"  id="accordionExample">
+        <div *ngFor="let personName of uniquePersonNameArray; let i = index">
+            <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" [attr.data-bs-target]="'#collapse-' + i" aria-expanded="true" [attr.aria-controls]="'collapse-' + i">
+                    {{personName | uppercase }}
+                </button>
+            </h2>
+            <div [id]="'collapse-' + i" class="accordion-collapse collapse show row" data-bs-parent="#accordionExample">
+                <div class="accordion-body col-2 image-container" *ngFor="let personImageInfo of personImageInfoArray[i]; let j = index">
+                    <img [src]="personImageInfo['image']" alt="" srcset="" width="100%" height="auto">
+                    <button class="delete-button bg-danger" (click)="deleteImage(personImageInfo['id'], i, j)"><i class="fa-solid fa-xmark text-white"></i></button>
+                </div>
+            </div>
+            </div>
+        </div>
+   </div>
+</div>

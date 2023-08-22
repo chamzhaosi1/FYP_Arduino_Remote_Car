@@ -1,0 +1,66 @@
+<div tabindex="0" (keydown)="handleKeyDown($event)" (keyup)="handleKeyUp($event)" (mousemove)="handleMouseMove($event)" (wheel)="RPMScroll($event)" class="cursor-disable">
+  <ng-container *ngTemplateOutlet="VIDEO"></ng-container>
+</div>
+
+<ng-template #VIDEO>
+  <div id="videos">
+    <video class="m-2 pe-2 pt-2 position-fixed end-0 z-1 rounded video-wh" id="localVideo" autoplay muted playsinline></video>
+    <div class="m-2 pe-2 pt-2 position-fixed bottom-0 end-0 z-1 rounded d-block" >
+      <img src="{{imgScr}}" alt="intruder.jpg" width="150px" height="auto" *ngFor="let imgScr of imgScrArray" class="m-2">
+    </div>
+    <div class="position-fixed start-0 top-0 z-1 m-2">
+      <div class="d-flex">
+        <form [formGroup]="FaceRecognitionMode" class="bg-secondary text-white">
+          <div class="form-check m-2">
+            <input class="form-check-input" type="checkbox" id="FRMcheckbox" name="FRMcheckbox"  formControlName = FRMcheckbox value="on">
+            <label class="form-check-label" for="checkboxExample">
+              FRM
+            </label>
+          </div>
+        </form>
+  
+        <form [formGroup]="CarryTray" class="bg-secondary text-white">
+          <div class="form-check m-2">
+            <input class="form-check-input" type="checkbox" id="CarryTraycheckbox" name="CarryTraycheckbox"  formControlName = CarryTraycheckbox value="on">
+            <label class="form-check-label" for="checkboxExample">
+              Tray Attached
+            </label>
+          </div>
+        </form>
+      </div>
+      
+      <div class="rounded wh-variaty m-2">
+        <canvas class="mecanum" id="mecanum" width="200" height="200" style="border:1px solid #d3d3d3;"></canvas>
+      </div>
+    </div>
+    <div class="rounded wh-variaty m-2 rpm-meter position-fixed bottom-0 start-0 z-1">
+      <div class="labels">
+        <div class="label">{{ rotationAngle }}</div>
+      </div>
+      <div class="needle" [style.transform]="'translateX(-50%) rotate(' + rotationAngle + 'deg)'"></div>
+    </div>
+    <div id="remoteVideoDiv" class="position-fixed">
+        <video id="remoteVideo" autoplay playsinline class="bg-secondary bg-opacity-50" (loadedmetadata)="onLoadedVideoMetadata($event)" [ngClass]="{'d-none': isRemoteVideoFaceConnect, 'd-block' : !isRemoteVideoFaceConnect}"></video>
+        <video id="remoteVideoFace" autoplay playsinline (loadedmetadata)="onLoadedFaceVideoMetadata($event)" class="bg-warning bg-opacity-50" [ngClass]="{'d-block': isRemoteVideoFaceConnect, 'd-none' : !isRemoteVideoFaceConnect}"></video>
+    </div>
+  </div>
+  <div class="m-auto frm d-flex justify-content-center rounded p-2" [ngClass]="{'d-block' : isLoadingShow, 'd-none': !isLoadingShow}">
+    <p class="m-0 me-3 p-0">
+      The Face Recognition mode is loading. <br> Please wait for a moment....</p>
+    <span class="loader"></span>
+  </div>
+  <div class="alert alert-warning alert-dismissible fade show remote-not-loaded-alert" role="alert" [ngClass]="{'d-block' : !isRemoteVideoLoaded, 'd-none': isRemoteVideoLoaded}">
+    <strong>Warning:</strong> The remote video has not yet loaded..
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  <div class="alert alert-primary rounded mote-alert text-center" role="alert" [ngClass]="{'d-block': is360DModeStarted, 'd-none': !is360DModeStarted}">
+    Control: {{controlType}} <br> Mode: 360 Direction Mode is started <br> {{FPSType}} {{frameCountMessage}} <br> View Point: {{viewMessage}}
+  </div>
+
+  <div class="alert alert-warning rounded mote-alert text-center" role="alert" [ngClass]="{'d-block': !is360DModeStarted, 'd-none': is360DModeStarted}">
+    Control: {{controlType}} <br> Mode: Normal Mode is started <br> {{FPSType}} {{frameCountMessage}} <br> View Point: {{viewMessage}}
+  </div>
+
+  <div id="plus-symbol"></div>
+
+</ng-template>

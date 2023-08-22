@@ -1,0 +1,47 @@
+<app-header [userFullName]="name"></app-header>
+
+<div class="container">
+    <div *ngIf="noImgToShow" class="alert alert-secondary mt-5">{{generalMessage}}</div>
+
+   <div *ngIf="!noImgToShow" class="accordion row d-flex mt-3 row"  id="accordionExample">
+        <div *ngFor="let personName of uniqueIntrNameArray; let i = index">
+            <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" [attr.data-bs-target]="'#collapse-' + i" aria-expanded="true" [attr.aria-controls]="'collapse-' + i">
+                    {{personName | uppercase }}
+                </button>
+            </h2>
+            <div [id]="'collapse-' + i" class="accordion-collapse collapse show row" data-bs-parent="#accordionExample">
+                <div class="accordion-body col-2 image-container border-end" *ngFor="let personImageInfo of intrImageInfoArray[i]; let j = index">
+                    <img [src]="personImageInfo['image']" alt="" srcset="" width="100%" height="auto">
+                </div>
+                <div class="d-block m-2 col-6 border-end" *ngFor="let intrInfo of intrInfoArray[i]; let k = index">
+                    <p>Found By ROMO: <span class="h4">{{intrInfo['mac_address']}}</span> </p>
+                    <p>Found Date Time: <span class="h4"> {{intrInfo['date_time']}}</span> </p>
+                </div>
+                <div class="d-block m-2 col-3" *ngFor="let intrInfo of intrInfoArray[i]; let l = index">
+                    <form [formGroup]="intrConvertAuthForm" (ngSubmit)="intrConvertAuthFormSubmit($event)" class="col-10 m-auto border-bottom">
+                        <div class="mb-3">
+                            <label for="person_name" class="form-label">Name of person</label>
+                            <input type="text" class="form-control" [id]="'intruder-' + i" [name]="'intruder-' + i" 
+                                [formControlName] = "'intruder-' + i" [ngClass]="{'is-invalid': intrConvertAuthForm.get('intruder-' + i).touched && intrConvertAuthForm.get('intruder-' + i).invalid }" required>
+                            
+                            <div class="alert alert-danger" *ngIf="intrConvertAuthForm.get('intruder-' + i).touched && intrConvertAuthForm.get('intruder-' + i).invalid">
+                                <div *ngIf="intrConvertAuthForm.get('intruder-' + i).errors?.required">
+                                    Name of person is required.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex row" >
+                            <button type="submit" class="btn btn-primary btn-block m-auto col-6 mb-3" [disabled]="intrConvertAuthForm.get('intruder-' + i).invalid">Authorized</button>
+                        </div> 
+                    </form>
+                    <div class="d-flex row" >
+                        <button type="submit" class="btn btn-danger btn-block m-auto col-6 mt-3" (click)="deleteImage(intrInfo['id'], i)">Delete</button>
+                    </div> 
+                </div>
+            </div>
+            </div>
+        </div>
+   </div>
+</div>

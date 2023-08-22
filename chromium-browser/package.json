@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "puppeteer": "^20.4.0",
+    "puppeteer-core": "^19.7.5"
+  }
+}

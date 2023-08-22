@@ -1,0 +1,107 @@
+<div class="container mt-5">
+  <div class="row justify-content-center">
+      <div class="col-md-6">
+          <div class="card">
+              <div class="card-header">
+                  <h2 class="text-center">Registration</h2>
+              </div>
+              <div class="card-body">
+       
+                  <div class="alert alert-danger" [ngStyle]="{display: showGeneralError ? 'block': 'none'  }">{{ generalError }}</div>
+    
+                  <form [formGroup] = 'registerForm' (ngSubmit)="submitRegister()">
+                      <div class="mb-3">
+                          <label for="username" class="form-label">Username</label>
+                          <input type="text" class="form-control" id="username" name="username" 
+                          formControlName = username required [ngClass]="{'is-invalid': Username.touched && Username.invalid }">
+                      
+                          <div class="alert alert-danger" *ngIf="Username.touched && Username.invalid">
+                            <div *ngIf="Username.errors?.required">
+                                Username is required.
+                            </div>
+                          </div>
+                      </div>
+
+                      <div class="mb-3 row">
+                        <div class="col-6">
+                          <label for="first_name" class="form-label">First Name</label>
+                          <input type="text" class="form-control" id="first_name" name="first_name"
+                          formControlName=first_name required [ngClass]="{'is-invalid': First_name.touched && First_name.invalid }">
+
+                          <div class="alert alert-danger" *ngIf="First_name.touched && First_name.invalid">
+                            <div *ngIf="First_name.errors?.required">
+                                First name is required.
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-6">
+                          <label for="last_name" class="form-label">Last Name</label>
+                          <input type="text" class="form-control" id="last_name" name="last_name"
+                          formControlName=last_name required [ngClass]="{'is-invalid': Last_name.touched && Last_name.invalid }">
+
+                          <div class="alert alert-danger" *ngIf="Last_name.touched && Last_name.invalid">
+                            <div *ngIf="Last_name.errors?.required">
+                                Last name is required.
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+
+                      <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email"
+                        formControlName=email required [ngClass]="{'is-invalid': Email.touched && Email.invalid }">
+                      
+                        <div class="alert alert-danger" *ngIf = "Email.touched && Email.invalid">
+                          <div *ngIf = "Email.errors?.required">
+                            Email is required!
+                          </div>
+
+                          <div *ngIf = "Email.errors?.email">
+                            Invalid email address!
+                          </div>
+                        </div>
+                      </div>
+                 
+                      
+                      <div class="mb-3">
+                          <label for="password" class="form-label">Password</label>
+                          <input type="password" class="form-control" id="password" name="password" 
+                          formControlName = password required [ngClass]="{'is-invalid': Password.touched && Password.invalid }"
+                          (change)="onKeyupEntry(confirm_password)">
+                     
+                          <div class="alert alert-danger" *ngIf="Password.touched && Password.invalid">
+                            <div *ngIf="Password.errors?.required">
+                              Password is required.
+                            </div>
+                            <div *ngIf="Password.errors?.minlength">
+                              A password must be at least 8 characters long!
+                            </div>
+                          </div>
+                      </div>
+                      <div class="mb-3">
+                          <label for="confirm_password" class="form-label">Confirm Password</label>
+                          <input type="password" class="form-control" id="confirm_password" name="confirm_password" 
+                          formControlName = confirm_password #confirm_password required [ngClass]="{'is-invalid': Confirm_password.touched && Confirm_password.invalid }" 
+                          (keyup) = "onKeyupEntry(confirm_password)">
+                          
+                          <div class="alert alert-danger" *ngIf="Confirm_password.touched && Confirm_password.invalid">
+                            <div *ngIf="Confirm_password.errors?.required">
+                              Confirm password is required.
+                            </div>
+                            <div *ngIf="Confirm_password.errors?.minlength">
+                              A password must be at least 8 characters long!
+                            </div>
+                          </div>
+                          <div class="alert alert-danger" [ngStyle]="{display: showNoSameError ? 'block' : 'none'}">
+                            {{noSameError}}
+                          </div>
+                      </div>
+                      <button type="submit" class="btn btn-primary btn-block" [disabled]="registerForm.invalid || showNoSameError">Register</button>
+                  </form>
+              </div>
+          </div>
+      </div>
+  </div>
+</div>

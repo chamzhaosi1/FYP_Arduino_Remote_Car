@@ -1,0 +1,6 @@
+/* You can add global styles to this file, and also import other style files */
+#deviceTable th,
+#deviceTable td {
+    border-color: #ff0000; /* Set the border color to red (change to desired color) */
+}
+

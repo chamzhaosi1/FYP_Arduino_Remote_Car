@@ -1,0 +1,48 @@
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-color">
+                    <h2 class="text-center"><img [src]="imgLogoPath" alt="" width="25%" height="25%"></h2>
+                </div>
+                <div class="card-body">
+                    
+                    <div class="alert alert-danger" [style.display]= "notFoundError ? 'block' : 'none'" >{{errorMessage}}</div>
+                    
+                    <form [formGroup] = 'loginForm' (ngSubmit) = 'submitLogin()'>
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" name="username" 
+                                formControlName = username required [ngClass]="{'is-invalid': Username.touched && Username.invalid }" >
+
+                            <div class="alert alert-danger" *ngIf="Username.touched && Username.invalid">
+                                <div *ngIf="Username.errors?.required">
+                                    Username is required.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" 
+                                formControlName = password [ngClass]="{'is-invalid': Password.touched && Password.invalid }" required>
+                            
+                            <div class="alert alert-danger" *ngIf="Password.touched && Password.invalid">
+                                <div *ngIf="Password.errors?.required">
+                                    Password is required.
+                                </div>
+                            </div>
+                        
+                        </div>
+                        <div class="d-flex row" >
+                            <button type="submit" class="btn btn-primary btn-block m-auto col-6" [disabled]="loginForm.invalid">Login</button>
+                        </div>
+                    </form>
+                    <div class="text-center mt-3">
+                        <p>Don't have an account? <a [routerLink]="['/register']">Create one</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

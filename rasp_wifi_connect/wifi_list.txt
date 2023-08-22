@@ -1,0 +1,14 @@
+	 hijrad@unifi
+	 Wireless-2.4GHz
+	 Kynoci@2.4
+	 hijrad@unifi
+	 
+	 
+	 marzuki
+	 FreeHameedWiFi
+	 vivo X80
+	 w3router2g
+	 Wireless-5.0GHz
+	 w3router5g
+	 hijrad_5Ghz@unifi
+	 
