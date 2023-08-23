@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            #polar {
+                border-radius: 100px;
+                background-color: white;
+                border: 1px solid #000;
+            }
+            
+                </style>
+    </head>
+<body>
+
+<canvas id="cartesian" width="200" height="200" style="border:1px solid #d3d3d3;"></canvas>
+<table border="1">
+<tr><td rowspan="2">Cartesian</td><td>x</td><td id="cartesian_coord_x"></td></tr>
+<tr><td>Y</td><td id="cartesian_coord_y"></td></tr>
+</table>
+
+<canvas id="polar" width="200" height="200" style="border:1px solid #d3d3d3;"></canvas>
+<table border="1">
+<tr><td rowspan="4">Polar</td><td>tetha</td><td id="tetha"></td></tr>
+<tr><td>maxRadius</td><td id="maxRadius"></td></tr>
+<tr><td>hypot</td><td id="hypot"></td></tr>
+<tr><td>radial</td><td id="radial"></td></tr>
+</table>
+    
+<canvas id="mecanum" width="200" height="200" style="border:1px solid #d3d3d3;"></canvas>
+
+<script>
+
+var canvas_cartesian = document.getElementById("cartesian");
+var c = canvas_cartesian.getContext("2d");
+var p = document.getElementById("polar").getContext("2d");
+var m = document.getElementById("mecanum").getContext("2d");
+
+function redraw(){
+
+    // Cartesian
+    c.clearRect(0, 0, 200,200);  
+    c.beginPath();    c.rect(50, 50, 100, 100);     c.stroke();
+    // \
+    c.moveTo(0, 0);   c.lineTo(200, 200);           c.stroke();
+    // /
+    c.moveTo(200, 0); c.lineTo(0, 200);             c.stroke();
+    // -
+    c.moveTo(0, 100); c.lineTo(200, 100);           c.stroke();
+    // |
+    c.moveTo(100, 0); c.lineTo(100, 200);           c.stroke();
+    
+    // Polar
+    p.clearRect(0, 0, 200,200);  
+    p.beginPath();  p.arc(100, 100, 50, 0, 2 * Math.PI, false); p.stroke();
+    // \
+    p.moveTo(29, 29);   p.lineTo(171, 171);           p.stroke();
+    // /
+    p.moveTo(171, 29); p.lineTo(29, 171);             p.stroke();
+    // -
+    p.moveTo(0, 100); p.lineTo(200, 100);           p.stroke();
+    // |
+    p.moveTo(100, 0); p.lineTo(100, 200);           p.stroke();
+
+    // Mecanum
+    m.clearRect(0, 0, 200,200);
+    
+    // Left-Front
+    m.beginPath();    m.rect(33, 25, 33, 50);     m.stroke();
+    m.moveTo(33, 33.5); m.lineTo(66, 66.5);       m.stroke();
+    drawPoint_cartesian(m, -(33+(33/2)), (25+(50/2)), 'purple', 6)
+    
+    // Right-Front
+    m.beginPath();    m.rect(134, 25, 33, 50);     m.stroke();
+    m.moveTo(134, 66.5); m.lineTo(167, 33.5);       m.stroke();
+    drawPoint_cartesian(m, (33+(33/2)), (25+(50/2)), 'purple', 6)
+    
+    // Left-Back
+    m.beginPath();    m.rect(33, 125, 33, 50);     m.stroke();
+    m.moveTo(33, 166.5); m.lineTo(66, 133.5);       m.stroke();
+    drawPoint_cartesian(m, -(33+(33/2)), -(25+(50/2)), 'purple', 6)
+    
+    // Right-Back
+    m.beginPath();    m.rect(134, 125, 33, 50);     m.stroke();
+    m.moveTo(134, 133.5); m.lineTo(167,166.5);       m.stroke();
+    drawPoint_cartesian(m, (33+(33/2)), -(25+(50/2)), 'purple', 6)
+
+    // Mecanum Body
+    m.beginPath();    m.rect(67, 37.5, 66, 125);     m.stroke();
+}
+redraw();
+let cartesian = {x:0 , y:0}; 
+let polar     = {a:0 , r:0}; 
+
+function getCursorPosition(canvas, event) {
+    const rect = canvas.getBoundingClientRect()
+    cartesian.x = event.clientX - rect.left-100
+    cartesian.y = -((event.clientY - rect.top) -100)
+}
+
+function drawPoint_cartesian(context, x, y, color, size) {
+    if (color == null) {
+        color = '#000';
+    }
+    if (size == null) {
+        size = 5;
+    }
+    context.beginPath();
+    context.fillStyle = color;
+    context.fillRect(x+100-(size/2), -(y-100)-(size/2), size, size);
+    // console.log(x + "+++"+ y);
+    // console.log(x+100 + "+++"+ -(y-100));
+    context.fill();
+}
+
+function drawPoint_polar(context, ang, radial, color, size) {
+    x=Math.sin((-(ang+90+180))*Math.PI/180)*radial;
+    y=Math.cos((-(ang+90+180))*Math.PI/180)*radial;
+
+    console.log(x + "___"+ y);
+
+    drawPoint_cartesian(context, x, y, color, size)
+}
+
+polar.r=75
+polar.a=0; 
+drawPoint_polar(p, polar.a, polar.r, 'orange', 6)
+polar.a=45; 
+drawPoint_polar(p, polar.a, polar.r, 'orange', 8)
+polar.a=90; 
+drawPoint_polar(p, polar.a, polar.r, 'orange', 10)
+polar.a=135;
+drawPoint_polar(p, polar.a, polar.r, 'orange', 12)
+polar.a=180;
+drawPoint_polar(p, polar.a, polar.r, 'orange', 14)
+polar.a=225;
+drawPoint_polar(p, polar.a, polar.r, 'orange', 16)
+polar.a=270;
+drawPoint_polar(p, polar.a, polar.r, 'orange', 18)
+polar.a=315;
+drawPoint_polar(p, polar.a, polar.r, 'orange', 20)
+
+canvas_cartesian.addEventListener('mousedown', function(e) {
+    getCursorPosition(canvas_cartesian, e);
+    
+    redraw();
+    drawPoint_cartesian(c, cartesian.x, cartesian.y, 'red', 6)
+    
+
+    //////////////////////////////////////////////////////////////
+    let tetha = 0;
+    if((cartesian.x>=0)&&(cartesian.y>=0)){
+        tetha = (Math.atan(cartesian.y/cartesian.x))/Math.PI*180;
+    }else if((cartesian.x<0)&&(cartesian.y>=0)){
+        tetha = 180+(Math.atan(cartesian.y/cartesian.x))/Math.PI*180;
+    }else if((cartesian.x<0)&&(cartesian.y<0)){
+        tetha = 180+(Math.atan(cartesian.y/cartesian.x))/Math.PI*180;
+    }else{
+        tetha = 360+(Math.atan(cartesian.y/cartesian.x))/Math.PI*180;
+    }
+    document.getElementById("tetha").innerHTML=tetha.toFixed(2);
+    //////////////////////////////////////////////////////////////
+    let maxRadius = 0;
+    if(tetha<45){
+        maxRadius = 100/Math.cos(tetha*Math.PI/180);  
+    }else if(tetha<=135){
+        maxRadius = 100/Math.sin(tetha*Math.PI/180);  
+    }else if(tetha<=225){
+        maxRadius = Math.abs(100/Math.cos(tetha*Math.PI/180));  
+    }else if(tetha<=315){
+        maxRadius = Math.abs(100/Math.sin(tetha*Math.PI/180));  
+    }else{
+        maxRadius = Math.abs(100/Math.cos(tetha*Math.PI/180));  
+    }
+    document.getElementById("maxRadius").innerHTML=maxRadius.toFixed(2); 
+    //////////////////////////////////////////////////////////////
+    let hypot = Math.hypot(cartesian.y, cartesian.x);
+    document.getElementById("hypot").innerHTML=hypot.toFixed(2);
+    //////////////////////////////////////////////////////////////
+    let radial = hypot * 100 / maxRadius;
+    document.getElementById("radial").innerHTML=radial.toFixed(2); 
+    //////////////////////////////////////////////////////////////
+    
+    drawPoint_polar(p, tetha, radial, 'orange', 6)
+
+    document.getElementById("cartesian_coord_x").innerHTML=cartesian.x;
+    document.getElementById("cartesian_coord_y").innerHTML=cartesian.y;
+    console.log("cartesian x: " + cartesian.x + " cartesian y: " + cartesian.y)
+})
+
+
+</script> 
+
+</body>
+</html>

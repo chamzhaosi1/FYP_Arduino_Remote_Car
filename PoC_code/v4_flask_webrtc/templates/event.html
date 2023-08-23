@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block main %}
+
+<div class="container-fluid gap-3">
+  <div class="m-2">
+    <h3>
+      Authorized / Upload Image List
+    </h3>
+    <div>
+      <img class="m-3" src="{{url_for('static', filename='authorized_img/bill_gates.jpg')}}" alt="" width="150px" height="auto">
+      <img class="m-3" src="{{url_for('static', filename='authorized_img/elon_mask.jpg')}}" alt="" width="150px" height="auto">
+      <img class="m-3" src="{{url_for('static', filename='authorized_img/mark_zuckerberg.jpg')}}" alt="" width="150px" height="auto">
+    </div>
+  </div>
+  <div class="m-2">
+    <h3>
+      Unauthorized Image List
+    </h3>
+    <div>
+      <img class="m-3" src="{{url_for('static', filename='unauthorized_img/girl.jpg')}}" alt="" width="150px" height="auto">
+    </div>
+  </div>
+  <div class="m-2">
+    <h3>
+      Face unauthorized capture history
+    </h3>
+  </div>
+</div>
+
+{% endblock %}

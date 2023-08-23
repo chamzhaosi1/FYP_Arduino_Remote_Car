@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block main %}
+  <div class="d-block d-sm-flex justify-content-center w-100 container-fluid gap-3">
+    <div class="text-bg-success p-3">
+      <h4 class="text-center mb-3">Control Selection</h4>
+      <div class="form-check mb-3">
+        <input class="form-check-input" type="radio" name="devicesSelection" id="joystick">
+        <label class="form-check-label" for="joystick">
+          <img src="{{url_for('static', filename='joystick.jpg')}}" alt="" >
+        </label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="radio" name="devicesSelection" id="keyboard_mouse" checked>
+        <label class="form-check-label" for="keyboard_mouse">
+          <img src="{{url_for('static', filename='keyboard_mouse.jpg')}}" alt="">
+        </label>
+      </div>
+    </div>
+    <div  class="text-bg-danger p-3 w-100">
+      <div class="row">
+        
+        <div class="d-flex justify-content-around">
+          <div>
+            <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3 col-lg-12 col-sm-10 col-12" role="register">
+              <label class="text-center mb-3">Add New ROMO device</label>
+              <input id="new_device" class="form-control mb-2" placeholder="Serial number">
+              <input id="label_name" class="form-control mb-2" placeholder="Label Name">
+              <div class="d-flex justify-content-center">
+                <button class="text-bg-primary btn-lg rounded w-50" type="submit"> <i class="fa-solid fa-check"></i> </button>
+              </div>
+            </form>
+          </div>
+
+          <div>
+            <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3 col-lg-12 col-sm-10 col-12" role="upload">
+              <label class="text-center mb-3">Upload authorized images</label>
+              <input id="image" type="file" class="form-control mb-2" name="image">
+              <input id="image_name" class="form-control mb-2" placeholder="Image Name">
+              <div class="d-flex justify-content-center">
+                <button class="text-bg-primary btn-lg rounded w-50" type="submit"> <i class="fa-solid fa-check"></i> </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container-fluid gap-3 mt-3">
+    <div class="bg-warning bg-gradient" style="--bs-bg-opacity: .5;">
+      {% if romo_detail %}
+      <div>
+        <table class="table" id="deviceTable">
+            <thead>
+              <tr>
+                <th scope="col">No</th>
+                <th scope="col">Label Name</th>
+                <th scope="col">Mac Address</th>
+                <th scope="col">Status</th>
+                <th scope="col">Operation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">1</th>
+                <td>{{romo_detail.dev_name}}</td>
+                <td>{{romo_detail.mac_add}}</td>
+                <td>{{romo_detail.status}}</td>
+                <td>
+                  <a class="text-white text-decoration-none" href="/live_streaming?mac_add={{romo_detail.mac_add}}&username={{user_detail}}"> 
+                    <button type="button" class="btn btn-primary">Connect</button>
+                  </a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+      </div>
+      {% else %}
+
+        <div class="alert alert-secondary" role="alert"> 
+          You don't have any ROMO device yet!
+        </div>
+
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

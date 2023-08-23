@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js" type="text/javascript"></script>
+    <style>
+        #polar {
+            border-radius: 100px;
+            background-color: white;
+            border: 1px solid #000;
+        }
+        div {
+            margin: 10px;
+        }
+        .first {
+            width: 25%;
+            display: inline-block;
+        }
+        .second {
+            width: 25%;
+            display: inline-block;
+        }
+        .third {
+            width: 25%;
+            display: inline-block;
+        }
+    </style>
+    </head>
+<body>
+<!-- 
+    <p id="getX" >Maybe Data</p>
+    <p >,</p>
+    <p id="getY" >Maybe Data</p> -->
+<h1>Get Control Value from MQTT server</h1>
+<div class="first">
+    <canvas id="cartesian" width="200" height="200" style="border:1px solid #d3d3d3;"></canvas>
+    <table border="1">
+    <tr><td rowspan="2">Cartesian</td><td>x</td><td id="cartesian_coord_x"></td></tr>
+    <tr><td>Y</td><td id="cartesian_coord_y"></td></tr>
+    </table>
+    <br/>
+</div>
+
+<div class="second">
+    <canvas id="polar" width="200" height="200" style="border:1px solid #d3d3d3;"></canvas>
+    <table border="1">
+        <tr><td rowspan="2">Polar</td><td>theta</td><td id="theta"></td></tr>
+        <!-- <tr><td>maxRadius</td><td id="maxRadius"></td></tr>
+        <tr><td>hypot</td><td id="hypot"></td></tr> -->
+        <tr><td>radial</td><td id="radial"></td></tr>
+    </table>
+    <br/>
+</div>
+
+<div class="third">
+    <canvas id="mecanum" width="200" height="200" style="border:1px solid #d3d3d3;"></canvas>
+    <table border="1" width="300">
+        <tr><td rowspan="2">Mecanum</td>
+            <td >L-F</td><td id="leftfront">.</td><td>R-F</td><td id="rightfront">.</td></tr>
+        <tr><td>L-B</td><td id="leftback">.</td><td>R-B</td><td id="rightback">.</td></tr>
+    </table>
+    <br/>
+</div>
+    
+<script>
+
+var client;
+var hostname       = "w33.kynoci.com";
+var port           = "8883";
+var led_topic      = "joystick/#";
+var clientId;
+
+if ( window.sessionStorage.clientId){
+  clientId = window.sessionStorage.clientId;
+}else{
+  clientId = "mqtt_js_" + parseInt(Math.random() * 100000, 10);
+  window.sessionStorage.clientId = clientId;
+}
+
+function connect(){
+	// Set up the client
+	client = new Paho.MQTT.Client(hostname, Number(port), clientId);
+	console.info('Connecting to Server: Hostname: ', hostname, '. Port: ', port, '. Client ID: ', clientId);
+
+	// set callback handlers
+	client.onConnectionLost = onConnectionLost;
+	client.onMessageArrived = onMessageArrived;
+
+	// see client class docs for all the options
+	var options = {
+		onSuccess: onConnect, // after connected, subscribes
+		onFailure: onFail,    // useful for logging / debugging
+    useSSL:true,
+    userName : "babi",
+    password : "chu"
+	};
+	// connect the client
+  // client.username_pw_set("babi", "chu")
+	client.connect(options);
+	console.info('Connecting...');
+}
+
+function onConnect(context) {
+	// console.log("Client Connected");
+//   document.getElementById('connect_button').innerHTML = "Connected!";
+//   document.getElementById('connect_button').disabled = true;
+//   document.getElementById('on_button').disabled = false;
+//   document.getElementById('off_button').disabled = false;
+
+  
+    // And subscribe to our topics	-- all with the same callback function
+	options = {qos:0, onSuccess:function(context){ console.log("subscribed"); } }
+	client.subscribe(led_topic, options);
+
+}
+
+function onFail(context) {
+	console.log("Failed to connect");
+}
+
+function onConnectionLost(responseObject) {
+	if (responseObject.errorCode !== 0) {
+		console.log("Connection Lost: " + responseObject.errorMessage);
+		window.alert("Someone else took my websocket!\nRefresh to take it back.");
+	}
+}
+
+
+
+
+var canvas_cartesian = document.getElementById("cartesian");
+var c = canvas_cartesian.getContext("2d");
+var p = document.getElementById("polar").getContext("2d");
+var m = document.getElementById("mecanum").getContext("2d");
+
+function redraw(){
+
+    // Cartesian
+    c.clearRect(0, 0, 200,200);  
+    c.beginPath();    c.rect(50, 50, 100, 100);     c.stroke();
+    // \
+    c.moveTo(0, 0);   c.lineTo(200, 200);           c.stroke();
+    // /
+    c.moveTo(200, 0); c.lineTo(0, 200);             c.stroke();
+    // -
+    c.moveTo(0, 100); c.lineTo(200, 100);           c.stroke();
+    // |
+    c.moveTo(100, 0); c.lineTo(100, 200);           c.stroke();
+    
+    // Polar
+    p.clearRect(0, 0, 200,200);  
+    p.beginPath();  p.arc(100, 100, 50, 0, 2 * Math.PI, false); p.stroke();
+    // \
+    p.moveTo(29, 29);   p.lineTo(171, 171);           p.stroke();
+    // /
+    p.moveTo(171, 29); p.lineTo(29, 171);             p.stroke();
+    // -
+    p.moveTo(0, 100); p.lineTo(200, 100);           p.stroke();
+    // |
+    p.moveTo(100, 0); p.lineTo(100, 200);           p.stroke();
+
+    // Mecanum
+    m.clearRect(0, 0, 200,200);
+    m.strokeStyle = 'black';
+    m.lineWidth = 1;
+    
+    // Left-Front
+    m.beginPath();    m.rect(33, 25, 33, 50);     m.stroke();
+    m.moveTo(33, 33.5); m.lineTo(66, 66.5);       m.stroke();
+    draw_cartesian_pos(m, -(33+(33/2)), (25+(50/2)), 'purple', 6)
+    
+    // Right-Front
+    m.beginPath();    m.rect(134, 25, 33, 50);     m.stroke();
+    m.moveTo(134, 66.5); m.lineTo(167, 33.5);       m.stroke();
+    draw_cartesian_pos(m, (33+(33/2)), (25+(50/2)), 'purple', 6)
+    
+    // Left-Back
+    m.beginPath();    m.rect(33, 125, 33, 50);     m.stroke();
+    m.moveTo(33, 166.5); m.lineTo(66, 133.5);       m.stroke();
+    draw_cartesian_pos(m, -(33+(33/2)), -(25+(50/2)), 'purple', 6)
+    
+    // Right-Back
+    m.beginPath();    m.rect(134, 125, 33, 50);     m.stroke();
+    m.moveTo(134, 133.5); m.lineTo(167,166.5);       m.stroke();
+    draw_cartesian_pos(m, (33+(33/2)), -(25+(50/2)), 'purple', 6)
+
+    // Mecanum Body
+    m.beginPath();    m.rect(67, 37.5, 66, 125);     m.stroke();
+
+}
+redraw();
+let cartesian = {x:0 , y:0}; 
+let polar     = {a:0 , r:0}; 
+
+function getCursorPosition(canvas, event) {
+    const rect = canvas.getBoundingClientRect()
+    cartesian.x = event.clientX - rect.left-100
+    cartesian.y = -((event.clientY - rect.top) -100)
+}
+
+function draw_cartesian_pos(context, x, y, color, size) {
+    if (color == null) {
+        color = '#000';
+    }
+    if (size == null) {
+        size = 5;
+    }
+    context.beginPath();
+    context.lineWidth = 1;
+    context.fillStyle = color;
+    context.fillRect(x+100-(size/2), -(y-100)-(size/2), size, size);
+    context.fill();
+    context.closePath();
+}
+
+function draw_cartesian_line(context, x1, y1, x2, y2, color, size) {
+    if (color == null) {
+        color = '#000';
+    }
+    if (size == null) {
+        size = 5;
+    }
+    context.beginPath();
+    context.lineWidth = size;
+    context.strokeStyle = color;
+    context.moveTo(x1+100, -(y1-100)); 
+    context.lineTo(x2+100, -(y2-100));       
+    context.stroke();
+    context.strokeStyle = 'black';
+    context.closePath();
+}
+
+function draw_cartesian_arc(context, ang, radial, color, size) {
+    context.beginPath();
+    context.lineWidth = size;
+    context.strokeStyle = color;
+    context.arc(100, 100, radial, 0, -(ang)*Math.PI/180, true);
+    context.stroke();
+    context.lineWidth = 1;
+    context.strokeStyle = 'black';
+    context.closePath();
+}
+
+function draw_polar_pos(context, ang, radial, color, size) {
+    x=Math.sin((-(ang+90+180))*Math.PI/180)*radial;
+    y=Math.cos((-(ang+90+180))*Math.PI/180)*radial;
+    draw_cartesian_pos(context, x, y, color, size)
+    draw_cartesian_pos(context, 0, 0, color, size)
+    draw_cartesian_line(context, 0, 0, x, y, color, size/2)    
+    draw_cartesian_arc(context, ang, radial, color, size/2) 
+}
+
+function mecanum_dir(offset_x,offset_y,ang,power){
+    m.beginPath();
+    m.lineWidth = 4;
+    radial2 = power*60/300;
+    var xx=Math.sin(ang*Math.PI/180)*Math.abs(radial2);
+    var yy=Math.cos(ang*Math.PI/180)*Math.abs(radial2);
+    if(radial2>=0){
+        m.strokeStyle = 'green';
+        m.moveTo(offset_x, offset_y); m.lineTo(offset_x+xx,offset_y-yy);       m.stroke();
+    }else{
+        m.strokeStyle = 'red';
+        m.moveTo(offset_x, offset_y); m.lineTo(offset_x-xx,offset_y+yy);       m.stroke();
+    }
+    m.closePath();
+}
+
+polar.r=75
+polar.a=0; 
+draw_polar_pos(p, polar.a, polar.r, 'orange', 6)
+polar.a=45; 
+draw_polar_pos(p, polar.a, polar.r, 'orange', 8)
+polar.a=90; 
+draw_polar_pos(p, polar.a, polar.r, 'orange', 10)
+polar.a=135;
+draw_polar_pos(p, polar.a, polar.r, 'orange', 12)
+polar.a=180;
+draw_polar_pos(p, polar.a, polar.r, 'orange', 14)
+polar.a=225;
+draw_polar_pos(p, polar.a, polar.r, 'orange', 16)
+polar.a=270;
+draw_polar_pos(p, polar.a, polar.r, 'orange', 18)
+polar.a=315;
+draw_polar_pos(p, polar.a, polar.r, 'orange', 20)
+
+canvas_cartesian.addEventListener('mousedown', function(e) {
+
+    return;
+    redraw();
+
+    // Calculate Cartesian - X,Y
+    getCursorPosition(canvas_cartesian, e);
+    document.getElementById("cartesian_coord_x").innerHTML=cartesian.x.toFixed(2); 
+    document.getElementById("cartesian_coord_y").innerHTML=cartesian.y.toFixed(2); 
+    draw_cartesian_pos(c, cartesian.x, cartesian.y, 'red', 6)
+
+    // Calculate Polar - Theta
+    let theta = 0;
+    if((cartesian.x>=0)&&(cartesian.y>=0)){
+        theta = (Math.atan(cartesian.y/cartesian.x))/Math.PI*180;
+    }else if((cartesian.x<0)&&(cartesian.y>=0)){
+        theta = 180+(Math.atan(cartesian.y/cartesian.x))/Math.PI*180;
+    }else if((cartesian.x<0)&&(cartesian.y<0)){
+        theta = 180+(Math.atan(cartesian.y/cartesian.x))/Math.PI*180;
+    }else{
+        theta = 360+(Math.atan(cartesian.y/cartesian.x))/Math.PI*180;
+    }
+    document.getElementById("theta").innerHTML=theta.toFixed(2);
+
+    // Calculate Polar - Radial (need maxRadius, hypot)
+    let maxRadius = 0;
+    if(theta<45){
+        maxRadius = 100/Math.cos(theta*Math.PI/180);  
+    }else if(theta<=135){
+        maxRadius = 100/Math.sin(theta*Math.PI/180);  
+    }else if(theta<=225){
+        maxRadius = Math.abs(100/Math.cos(theta*Math.PI/180));  
+}else if(theta<=315){
+    maxRadius = Math.abs(100/Math.sin(theta*Math.PI/180));  
+}else{
+    maxRadius = Math.abs(100/Math.cos(theta*Math.PI/180));  
+    }
+    // document.getElementById("maxRadius").innerHTML=maxRadius.toFixed(2); 
+    let hypot = Math.hypot(cartesian.y, cartesian.x);
+    // document.getElementById("hypot").innerHTML=hypot.toFixed(2);
+    let radial = hypot * 100 / maxRadius;
+    document.getElementById("radial").innerHTML=radial.toFixed(2); 
+    draw_polar_pos(p, theta, radial, 'orange', 6)
+
+    // Calculate Mecanum
+    var pwr_sin=Math.sin((theta-45)*Math.PI/180)*radial*3;
+    var pwr_cos=Math.cos((theta-45)*Math.PI/180)*radial*3;
+    // Left-Front
+    mecanum_dir(49.5, 50, 45, pwr_cos);
+    document.getElementById("leftfront").innerHTML=pwr_cos.toFixed(2); 
+    // Right-Front
+    mecanum_dir(150.5, 50, -45, pwr_sin);
+    document.getElementById("rightfront").innerHTML=pwr_sin.toFixed(2); 
+    // Left-Back
+    mecanum_dir(49.5, 150, -45, pwr_sin);
+    document.getElementById("leftback").innerHTML=pwr_sin.toFixed(2); 
+    // Right-Back
+    mecanum_dir(150.5, 150, 45, pwr_cos);
+    document.getElementById("rightback").innerHTML=pwr_cos.toFixed(2); 
+
+})
+
+
+
+
+
+
+
+function onMessageArrived(message) {
+	console.log('got message to topic:',message.destinationName, 'message:', message.payloadString);
+	
+	if(message.destinationName=='joystick/x'){
+		// document.getElementById('getX').innerHTML = message.payloadString;
+        cartesian.x = parseInt(message.payloadString);
+        console.log("KENNY - "+cartesian.y);
+	}
+	if(message.destinationName=='joystick/y'){
+		// document.getElementById('getY').innerHTML = message.payloadString;
+        cartesian.y = parseInt(message.payloadString)
+        console.log("KENNY - "+cartesian.y);
+	}
+ 
+
+    /////// START ///////////////
+
+
+    
+    redraw();
+
+//     // Calculate Cartesian - X,Y
+// // cartesian.x = 
+//     // getCursorPosition(canvas_cartesian, e);
+    document.getElementById("cartesian_coord_x").innerHTML=cartesian.x; 
+    document.getElementById("cartesian_coord_y").innerHTML=cartesian.y; 
+    draw_cartesian_pos(c, cartesian.x, cartesian.y, 'red', 6)
+
+    // Calculate Polar - Theta
+    let theta = 0;
+    if((cartesian.x>=0)&&(cartesian.y>=0)){
+        theta = (Math.atan(cartesian.y/cartesian.x))/Math.PI*180;
+    }else if((cartesian.x<0)&&(cartesian.y>=0)){
+        theta = 180+(Math.atan(cartesian.y/cartesian.x))/Math.PI*180;
+    }else if((cartesian.x<0)&&(cartesian.y<0)){
+        theta = 180+(Math.atan(cartesian.y/cartesian.x))/Math.PI*180;
+    }else{
+        theta = 360+(Math.atan(cartesian.y/cartesian.x))/Math.PI*180;
+    }
+    // if(isNaN(theta)){
+    //     theta=0
+    // }
+    document.getElementById("theta").innerHTML=theta.toFixed(2);
+    
+    // Calculate Polar - Radial (need maxRadius, hypot)
+    let maxRadius = 0;
+    if(theta<45){
+        maxRadius = 100/Math.cos(theta*Math.PI/180);  
+    }else if(theta<=135){
+        maxRadius = 100/Math.sin(theta*Math.PI/180);  
+    }else if(theta<=225){
+        maxRadius = Math.abs(100/Math.cos(theta*Math.PI/180));  
+    }else if(theta<=315){
+        maxRadius = Math.abs(100/Math.sin(theta*Math.PI/180));  
+    }else{
+        maxRadius = Math.abs(100/Math.cos(theta*Math.PI/180));  
+    }
+    // document.getElementById("maxRadius").innerHTML=maxRadius.toFixed(2); 
+    let hypot = Math.hypot(cartesian.y, cartesian.x);
+    // document.getElementById("hypot").innerHTML=hypot.toFixed(2);
+    let radial = hypot * 100 / maxRadius;
+    // if(isNaN(radial)){
+    //     radial=0
+    // }
+    document.getElementById("radial").innerHTML=radial.toFixed(2); 
+    draw_polar_pos(p, theta, radial, 'orange', 6)
+
+    // Calculate Mecanum
+    var pwr_sin=Math.sin((theta-45)*Math.PI/180)*radial*3;
+    var pwr_cos=Math.cos((theta-45)*Math.PI/180)*radial*3;
+
+    if(isNaN(pwr_sin)){
+        pwr_sin=0
+    }
+
+    if(isNaN(pwr_cos)){
+        pwr_cos=0
+    }
+    // Left-Front
+    mecanum_dir(49.5, 50, 45, pwr_cos);
+    document.getElementById("leftfront").innerHTML=pwr_cos.toFixed(2); 
+    // Right-Front
+    mecanum_dir(150.5, 50, -45, pwr_sin);
+    document.getElementById("rightfront").innerHTML=pwr_sin.toFixed(2); 
+    // Left-Back
+    mecanum_dir(49.5, 150, -45, pwr_sin);
+    document.getElementById("leftback").innerHTML=pwr_sin.toFixed(2); 
+    // Right-Back
+    mecanum_dir(150.5, 150, 45, pwr_cos);
+    document.getElementById("rightback").innerHTML=pwr_cos.toFixed(2);
+
+    var message = new Paho.MQTT.Message(pwr_cos.toFixed(0));
+    message.destinationName = "mecanum/lf";
+    message.qos = 0;
+    client.send(message);
+    
+    var message = new Paho.MQTT.Message(pwr_sin.toFixed(0));
+    message.destinationName = "mecanum/rf";
+    message.qos = 0;
+    client.send(message);
+
+    var message = new Paho.MQTT.Message(pwr_sin.toFixed(0));
+    message.destinationName = "mecanum/lb";
+    message.qos = 0;
+    client.send(message);
+    
+    var message = new Paho.MQTT.Message(pwr_cos.toFixed(0));
+    message.destinationName = "mecanum/rb";
+    message.qos = 0;
+    client.send(message);
+
+
+
+    
+    /////// END  ///////////////
+}
+
+connect();
+
+
+</script> 
+</body>
+</html>

@@ -1,0 +1,220 @@
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- CSS only -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+    <link rel="stylesheet" href="call.css">
+    <title>WebRTC demo</title>  
+</head>
+
+<div class="ms-3">
+    <h2>Options</h2>
+    <div class="option">
+        <input id="use-datachannel" checked="checked" type="checkbox"/>
+        <label for="use-datachannel">Use datachannel</label>
+        <select id="datachannel-parameters">
+            <option value='{"ordered": true}'>Ordered, reliable</option>
+            <option value='{"ordered": false, "maxRetransmits": 0}'>Unordered, no retransmissions</option>
+            <option value='{"ordered": false, "maxPacketLifetime": 500}'>Unordered, 500ms lifetime</option>
+        </select>
+    
+    </div>
+    <div class="option">
+        <input id="use-audio" checked="checked" type="checkbox"/>
+        <label for="use-audio">Use audio</label>
+        <select id="audio-codec">
+            <option value="default" selected>Default codecs</option>
+            <option value="opus/48000/2">Opus</option>
+            <option value="PCMU/8000">PCMU</option>
+            <option value="PCMA/8000">PCMA</option>
+        </select>
+    </div>
+    <div class="option">
+        <input id="use-video" type="checkbox" checked/>
+        <label for="use-video">Use video</label>
+        <select id="video-resolution">
+            <option value="" selected>Default resolution</option>
+            <option value="320x240">320x240</option>
+            <option value="640x480">640x480</option>
+            <option value="960x540">960x540</option>
+            <option value="1280x720">1280x720</option>
+        </select>
+        <select id="video-transform">
+            <option value="none" selected>No transform</option>
+            <option value="edges">Edge detection</option>
+            <option value="cartoon">Cartoon effect</option>
+            <option value="rotate">Rotate</option>
+            <option value="face_detection" selected>Face detection</option>
+        </select>
+        <select id="video-codec">
+            <option value="default" selected>Default codecs</option>
+            <option value="VP8/90000">VP8</option>
+            <option value="H264/90000">H264</option>
+        </select>
+    </div>
+    <div class="option">
+        <input id="use-stun" type="checkbox" checked/>
+        <label for="use-stun">Use STUN server</label>
+    </div>
+</div>
+
+<div class="d-flex justify-content-center ">
+    <div>
+        <!-- to input username and login -->
+        <div id="userName">
+            <div style="display: flex; flex-direction: column; align-items: center; width: 500px;">
+                <input placeholder="What should we call you?"
+                    style="text-align:center; height: 50px; font-size: xx-large;" type="text" name=""
+                    id="userNameInput">
+                <div style="height: 5px;"></div>
+                <button onclick="login()" class="actionButton">Login</button>
+            </div>
+        </div>
+
+        <!-- to display current login user information  -->
+        <div id="userInfo">
+            <div style="display: flex; flex-direction: column; align-items: center; width: 500px;">
+                <h1>Hello, <span id="nameHere"></span></h1>
+            </div>
+
+        </div>
+
+        <!-- to make a call with name -->
+        <div id="call">
+            <div class="dialWrapper">
+                <input placeholder="Whom to call?" style="text-align:center; height: 50px; font-size: xx-large;"
+                    type="text" name="callName" id="callName">
+                <div class="dialNumpadHWrapper">
+                    <div class="dialNumber">
+                    </div>
+                    <div class="dialNumber">
+                        <button class="dialActionButton" onclick="call()">Call</button>
+                    </div>
+                    <div class="dialNumber">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- to show incommming call and accept -->
+        <div id="answer">
+            <div class="incomingWrapper">
+                <div class="itemWrapper">
+                    <h2>Incomming Call</h2>
+                </div>
+                <div class="itemWrapper">
+                    <img id="profileImageA" style="padding: 30px; width: 140px; height: 140px;"
+                        src="char-pikachu.png" alt="">
+                </div>
+                <div class="itemWrapper">
+                    <h2 style="line-height: 50px;"><span id="callerName"></span></h2>
+                </div>
+                <div class="itemWrapper" style="display: flex; flex-direction: row; margin-bottom: 20px;">
+                    <button class="actionButton" onclick="answer()">Answer</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- to show outgoing call -->
+        <div id="calling">
+            <div class="incomingWrapper">
+                <div class="itemWrapper">
+                    <h2>Calling</h2>
+                </div>
+                <div class="itemWrapper">
+                    <img id="profileImageCA" style="padding: 30px; width: 140px; height: 140px;"
+                        src="char-pikachu.png" alt="">
+                </div>
+                <div class="itemWrapper">
+                    <h3 style="line-height: 50px;"><span id="otherUserNameCA"></span></h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- to show call in progress call -->
+        <div id="inCall">
+            <div class="incomingWrapper">
+                <div class="itemWrapper">
+                    <h3>On Call With</h3>
+                    <h2 style="line-height: 50px;"><span id="otherUserNameC"></span></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- to show local and remote video -->
+<div id="videos" class="d-flex justify-content-center">    
+    <div>
+        <div style="position:absolute; top:0; right:0; padding-right: 20px; padding-top: 20px">
+            <video width="100px" id="localVideo" autoplay muted playsinline></video>
+        </div>
+        <div id="remoteVideoDiv">
+            <h2>Remote Peer</h2>
+            <video height="480" width="640" id="remoteVideo" autoplay playsinline></video>
+        </div>
+    </div>
+    
+    <div id="media_internal">
+        <h2>Media Opencv</h2>
+        <audio id="audio_internal" autoplay="true"></audio>
+        <video id="video_internal" autoplay="true" playsinline="true" height="480" width="640"></video>
+    </div>
+</div>
+    
+
+
+<h2>State</h2>
+<p>
+    ICE gathering state: <span id="ice-gathering-state"></span>
+</p>
+<p>
+    ICE connection state: <span id="ice-connection-state"></span>
+</p>
+<p>
+    Signaling state: <span id="signaling-state"></span>
+</p>
+
+<h2>Data channel</h2>
+<pre id="data-channel" style="height: 200px;"></pre>
+
+<h2>SDP</h2>
+
+<h3>Offer</h3>
+<pre id="offer-sdp"></pre>
+
+<h3>Answer</h3>
+<pre id="answer-sdp"></pre>
+
+<script src="client.js"></script>
+<script src="main.js" ></script>
+<!-- JavaScript Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
+<!-- <script async src="{% static 'js/opencv.js' %}" onload="openCvReady();" defer></script> -->
+<!-- <script src="{% static 'js/utils.js' %}"></script> -->
+<script>
+    document.getElementById("call").style.display = "none";
+    document.getElementById("userInfo").style.display = "none";
+    document.getElementById("answer").style.display = "none";
+    document.getElementById("inCall").style.display = "none";
+    document.getElementById("calling").style.display = "none";
+    document.getElementById("videos").style.display = "none";
+    document.getElementById("media_internal").style.display = "none";
+    document.getElementById("remoteVideoDiv").style.display = "none";
+</script>
+<script>
+    function login() {
+        let userName = document.getElementById("userNameInput").value;
+        myName = userName;
+        document.getElementById("userName").style.display = "none";
+        document.getElementById("call").style.display = "block";
+
+        document.getElementById("nameHere").innerHTML = userName;
+        document.getElementById("userInfo").style.display = "block";
+
+        connectSocket();
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+{% if unknownImgCapture %}
+
+<div class="d-flex justify-content-center">
+    <div>
+        <div>
+            <h3>Please write down your name</h3>
+        </div>
+        <div>
+            <img src="{{ url_for('static', filename='/unknowImg/' + unknownImgCapture) }}" alt="" class="w-100">
+            <div class="d-flex align-items-center row w-100">
+                <div class="col">
+                    <form action="{{url_for ('update_img_name')}}" method="POST">
+                        <div class="mb-3">
+                          <label for="inputNewName" class="form-label">Name</label>
+                          <input type="text" class="form-control" id="inputNewName" name="inputNewName" required>
+                          <input type="hidden" class="form-control" id="oldName" name="oldName" value="{{unknownImgCapture}}">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+                <div class="col d-flex justify-content-center">
+                    <form action="{{url_for ('delete_img')}}" method="POST">
+                        <button type="submit" class="btn btn-danger btn-lg">Delete</button>
+                        <input type="hidden" class="form-control" id="deleteImgName" name="deleteImgName" value={{unknownImgCapture}}>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endif %}

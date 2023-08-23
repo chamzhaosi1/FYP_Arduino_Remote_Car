@@ -1,0 +1,5 @@
+Refer: https://www.youtube.com/watch?v=gy8pc-S6wjI
+0291
+
+bcdedit /set testsigning on
+bcdedit /set testsigning off

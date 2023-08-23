@@ -1,0 +1,5 @@
+/* CSS to customize the table border color */
+#deviceTable th,
+#deviceTable td {
+    border-color: #ff0000; /* Set the border color to red (change to desired color) */
+}

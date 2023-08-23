@@ -1,0 +1,25 @@
+{% if type=="Dashboard" or type=="Event" or type=="Live_streaming"%}
+<header class="py-3 mb-3 border-bottom">
+  <div class="container-fluid d-grid gap-3 align-items-center" style="grid-template-columns: 1fr 2fr;">
+    <a class="navbar-brand  d-inline-flex " href="#"><img src="{{url_for('static', filename='romo_logo_sm.png')}}" alt=""></a>
+  <div class="container-fluid d-grid gap-3 align-items-center d-flex justify-content-end" style="grid-template-columns: 1fr 2fr;">
+    <div class="d-flex align-items-center ">  
+      <div class="flex-shrink-0 dropdown d-flex">
+        <h4 class="me-3">Welcome, {{user_detail}}</h4>
+
+        <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle show" data-bs-toggle="dropdown" aria-expanded="true">
+          <img src="https://github.com/mdo.png" alt="mdo" width="32" height="32" class="rounded-circle">
+        </a>
+        <ul class="dropdown-menu text-small shadow" style="position: absolute; inset: 0px 0px auto auto; margin: 0px; transform: translate(0px, 34px);" data-popper-placement="bottom-end">
+          <li><a class="dropdown-item" href="/">Dashboard</a></li>
+          <li><a class="dropdown-item" href="/event">Event</a></li>
+          <li><a class="dropdown-item" href="#">Settings</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item" href="/logout">Sign out</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  </div>
+</header>
+{% endif %}
